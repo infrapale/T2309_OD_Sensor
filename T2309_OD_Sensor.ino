@@ -6,8 +6,8 @@
  * https://github.com/infrapale/pico_arduino_sdk.git
  *
  */
-//#define PIRPANA
-#define LILLA_ASTRID
+#define PIRPANA
+//#define LILLA_ASTRID
 //#define VILLA_ASTRID
 #include <stdint.h>
 #include "stdio.h"
@@ -18,7 +18,7 @@
 #include "Adafruit_MQTT_Client.h"
 #include "secrets.h"
 //#include <Adafruit_PCT2075.h>
-#include <Adafruit_Sensor.h>
+// #include <Adafruit_Sensor.h>
 #include "Adafruit_BME680.h"
 
 
@@ -34,7 +34,7 @@
 #define AIO_SERVERPORT  1883
 #define AIO_USERNAME    IO_USERNAME
 #define AIO_KEY         IO_KEY
-#define AIO_PUBLISH_INTERVAL_ms  30000
+#define AIO_PUBLISH_INTERVAL_ms  10000
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
@@ -126,24 +126,24 @@ void setup()
     Wire1.setSCL(7);
     Wire1.setSDA(6);
     Wire1.begin();
-    bme = Adafruit_BME680(&Wire1); 
+    // bme = Adafruit_BME680(&Wire1); 
    
 
-    if (!bme.begin(0x77)) {
-        Serial.println("Could not find a valid BME680 sensor, check wiring!");
-      while (1);
-    }
-    Serial.println("BME680 Sensor found");
+    // if (!bme.begin(0x77)) {
+    //     Serial.println("Could not find a valid BME680 sensor, check wiring!");
+    //   while (1);
+    // }
+    // Serial.println("BME680 Sensor found");
 
     // Set up oversampling and filter initialization
-    bme.setTemperatureOversampling(BME680_OS_8X);
-    bme.setHumidityOversampling(BME680_OS_2X);
-    bme.setPressureOversampling(BME680_OS_4X);
-    bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-    bme.setGasHeater(320, 150); // 320*C for 150 ms
+    // bme.setTemperatureOversampling(BME680_OS_8X);
+    // bme.setHumidityOversampling(BME680_OS_2X);
+    // bme.setPressureOversampling(BME680_OS_4X);
+    // bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
+    // bme.setGasHeater(320, 150); // 320*C for 150 ms
 
-    uint32_t count_down_ms = Watchdog.enable(6000);
-    Watchdog.reset();
+    // uint32_t count_down_ms = Watchdog.enable(6000);
+    // Watchdog.reset();
     WiFi.begin(WLAN_SSID, WLAN_PASS);
     while (WiFi.status() != WL_CONNECTED) 
     {
@@ -230,8 +230,9 @@ void report_publ_status(bool publ_status)
 void send_meas_to_uart(const char *id_4, float value)
 {
     char buff[40];
-    sprintf(buff, "<%s:%f>\n",id_4,value);
-    Serial.print(buff);
+    sprintf(buff, "<#X1T:OD_1;%s;%.2f;->\n",id_4,value);
+    //Serial.print(buff);
+    Serial1.print(buff);
     /*
     Serial.print('<');
     Serial.print(id_4);
@@ -264,9 +265,11 @@ void loop()
             switch(ctrl.publ_indx)
             {
                 case 0:
-                    if ( bme.performReading()) 
+                    // if ( bme.performReading()) 
+                    if (true)
                     {
-                        ctrl.temp = bme.temperature;
+                        // ctrl.temp = bme.temperature;
+                        ctrl.temp = 27.4;
                         //Serial.print("temperature = ");
                         //Serial.print(ctrl.temp);
                         send_meas_to_uart("TEMP",ctrl.temp);
@@ -282,9 +285,11 @@ void loop()
                     ctrl.publ_indx++;
                     break;
                 case 1:
-                    if ( bme.performReading()) 
+                    // if ( bme.performReading()) 
+                    if (true)
                     {
-                        ctrl.humidity = bme.humidity;
+                        // ctrl.humidity = bme.humidity;
+                        ctrl.humidity = 45.0;
                         send_meas_to_uart("HUMI",ctrl.humidity);
                         publ_status = sensor_humidity.publish(ctrl.humidity); //Publish to Adafruit
                         report_publ_status(publ_status);
@@ -315,8 +320,8 @@ void loop()
                     break;
             }
         }
-        sprintf(buff, "%d %d %d\n",ctrl.fault_cntr.mqtt_fault, ctrl.fault_cntr.bme_fault, ctrl.fault_cntr.ldr_fault);
-        Serial.print(buff);
+        // sprintf(buff, "%d %d %d\n",ctrl.fault_cntr.mqtt_fault, ctrl.fault_cntr.bme_fault, ctrl.fault_cntr.ldr_fault);
+        // Serial.print(buff);
         if ((ctrl.fault_cntr.mqtt_fault < 2) &&
             (ctrl.fault_cntr.bme_fault < 2) &&
             (ctrl.fault_cntr.ldr_fault < 4))
@@ -327,7 +332,7 @@ void loop()
         {
             Serial.println("A Watchdog reset will occur");             
         }                               
-        
+        delay(4000);
     }
 
     /*
