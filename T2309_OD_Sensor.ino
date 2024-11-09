@@ -6,6 +6,7 @@
  * https://github.com/infrapale/pico_arduino_sdk.git
  *
  */
+ #define APP_NAME  "T2309_OD_Sensor"
 //#define PIRPANA
 //#define LILLA_ASTRID
 #define VILLA_ASTRID
@@ -119,7 +120,7 @@ void setup()
     //while (!Serial) {
     //  ;  // wait for serial port to connect. Needed for native USB port only
     //}
-    Serial.println(F("Adafruit IO Example"));
+    Serial.printf("%s: %s %s\n",APP_NAME,__DATE__,__TIME__);
     // Connect to WiFi access point.
     Serial.print(F("Connecting to "));
     Serial.println(WLAN_SSID);
@@ -232,7 +233,7 @@ void report_publ_status(bool publ_status)
 void send_meas_to_uart(const char *id_4, float value)
 {
     char buff[40];
-    sprintf(buff, "<#X1T:OD_1;%s;%.2f;->\n",id_4,value);
+    sprintf(buff, "<#X1N:OD_1;%s;%.2f;->\n",id_4,value);
     Serial.print(buff);
     Serial1.print(buff);
     /*
@@ -271,7 +272,7 @@ void loop()
                     {
                         ctrl.temp = bme.temperature;
                         Serial.print("temperature = ");
-                        Serial.print(ctrl.temp);
+                        Serial.println(ctrl.temp);
                         send_meas_to_uart("TEMP",ctrl.temp);
                         publ_status = sensor_temperature.publish(ctrl.temp); //Publish to Adafruit
                         report_publ_status(publ_status);
